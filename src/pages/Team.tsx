@@ -138,7 +138,7 @@ export function Team() {
                 <label>Skills (comma-separated)</label>
                 <input
                   value={form.skills}
-                  placeholder="HVAC, Plumbing"
+                  placeholder="Deep Clean, Move-out"
                   onChange={(e) => setForm({ ...form, skills: e.target.value })}
                 />
               </div>

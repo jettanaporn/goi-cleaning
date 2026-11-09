@@ -15,8 +15,8 @@ export function Dashboard() {
     .filter((i) => i.status === 'paid')
     .reduce((s, i) => s + lineTotal(i.lineItems), 0);
 
-  const openEstimates = data.estimates.filter((e) =>
-    ['draft', 'sent', 'accepted'].includes(e.status),
+  const openInvoices = data.invoices.filter((i) =>
+    ['draft', 'sent', 'overdue'].includes(i.status),
   );
 
   const techsOnJobs = data.technicians.filter((t) => t.availability === 'on_job');
@@ -30,7 +30,7 @@ export function Dashboard() {
       <div className="topbar">
         <div>
           <h1>Dashboard</h1>
-          <div className="sub">Today’s field picture · sample data</div>
+          <div className="sub">Today’s cleaning picture · sample data</div>
         </div>
         <div className="row">
           <Link to="/app/jobs" className="btn btn-solid btn-sm">
@@ -52,8 +52,8 @@ export function Dashboard() {
           <div className="value">{money(paidThisWeek)}</div>
         </div>
         <div className="metric">
-          <div className="label">Open estimates</div>
-          <div className="value">{openEstimates.length}</div>
+          <div className="label">Open invoices</div>
+          <div className="value">{openInvoices.length}</div>
         </div>
         <div className="metric">
           <div className="label">Outstanding AR</div>
@@ -77,7 +77,7 @@ export function Dashboard() {
                 <tr>
                   <th>Time</th>
                   <th>Job</th>
-                  <th>Tech</th>
+                  <th>Cleaner</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -86,9 +86,11 @@ export function Dashboard() {
                   const cust = data.customers.find((c) => c.id === j.customerId);
                   const tech = data.technicians.find((t) => t.id === j.technicianId);
                   return (
-                    <tr key={j.id} onClick={() => (window.location.hash = '')}>
+                    <tr key={j.id}>
                       <td>
-                        <Link to={`/app/jobs/${j.id}`}>{timeRange(j.scheduledStart, j.scheduledEnd)}</Link>
+                        <Link to={`/app/jobs/${j.id}`}>
+                          {timeRange(j.scheduledStart, j.scheduledEnd)}
+                        </Link>
                       </td>
                       <td>
                         <Link to={`/app/jobs/${j.id}`}>
@@ -113,7 +115,7 @@ export function Dashboard() {
         <section className="stack">
           <div>
             <div className="section-head">
-              <h2>Techs on jobs</h2>
+              <h2>Cleaners on jobs</h2>
             </div>
             {techsOnJobs.length === 0 ? (
               <p className="empty">Everyone is available.</p>
@@ -149,16 +151,16 @@ export function Dashboard() {
 
           <div>
             <div className="section-head">
-              <h2>Open estimates</h2>
-              <Link to="/app/estimates" className="muted">
+              <h2>Open invoices</h2>
+              <Link to="/app/invoices" className="muted">
                 All →
               </Link>
             </div>
-            {openEstimates.slice(0, 4).map((e) => {
-              const cust = data.customers.find((c) => c.id === e.customerId);
+            {openInvoices.slice(0, 4).map((inv) => {
+              const cust = data.customers.find((c) => c.id === inv.customerId);
               return (
                 <div
-                  key={e.id}
+                  key={inv.id}
                   className="row"
                   style={{
                     justifyContent: 'space-between',
@@ -167,16 +169,16 @@ export function Dashboard() {
                   }}
                 >
                   <div>
-                    <Link to="/app/estimates">
-                      <strong>{e.number}</strong>
+                    <Link to="/app/invoices">
+                      <strong>{inv.number}</strong>
                     </Link>
                     <div className="muted" style={{ fontSize: '0.85rem' }}>
-                      {cust?.name} · {when(e.createdAt, 'MMM d')}
+                      {cust?.name} · {when(inv.createdAt, 'MMM d')}
                     </div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
-                    <div>{money(lineTotal(e.lineItems))}</div>
-                    <StatusBadge kind="estimate" status={e.status} />
+                    <div>{money(lineTotal(inv.lineItems))}</div>
+                    <StatusBadge kind="invoice" status={inv.status} />
                   </div>
                 </div>
               );

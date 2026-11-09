@@ -8,7 +8,6 @@ const links = [
   { to: '/app/schedule', label: 'Schedule' },
   { to: '/app/customers', label: 'Customers' },
   { to: '/app/jobs', label: 'Jobs' },
-  { to: '/app/estimates', label: 'Estimates' },
   { to: '/app/invoices', label: 'Invoices' },
   { to: '/app/price-book', label: 'Price book' },
   { to: '/app/team', label: 'Team' },

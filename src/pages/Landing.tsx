@@ -18,9 +18,9 @@ export function Landing() {
         <div className="brand-hero">Goi Cleaning Project</div>
         <h1>Run the day. Own the schedule.</h1>
         <p>
-          Field service ops for HVAC, plumbing, and cleaning teams — dispatch,
-          estimates, and invoices in one place that actually feels built for the
-          truck and the office.
+          Cleaning ops for residential and commercial crews — dispatch,
+          jobs, and invoices in one place that actually feels built for the
+          crew and the office.
         </p>
         <div className="cta-row">
           <Link to="/login" className="btn btn-primary">

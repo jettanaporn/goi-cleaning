@@ -10,7 +10,7 @@ export function PriceBook() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     name: '',
-    category: 'HVAC',
+    category: 'Residential',
     description: '',
     price: '100',
     durationMinutes: '60',
@@ -40,7 +40,7 @@ export function PriceBook() {
     setOpen(false);
     setForm({
       name: '',
-      category: 'HVAC',
+      category: 'Residential',
       description: '',
       price: '100',
       durationMinutes: '60',
@@ -52,7 +52,7 @@ export function PriceBook() {
       <div className="topbar">
         <div>
           <h1>Price book</h1>
-          <div className="sub">Flat-rate services for estimates & jobs</div>
+          <div className="sub">Flat-rate services for jobs & invoices</div>
         </div>
         <button type="button" className="btn btn-solid btn-sm" onClick={() => setOpen(true)}>
           Add service
@@ -110,9 +110,9 @@ export function PriceBook() {
                   value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}
                 >
-                  <option>HVAC</option>
-                  <option>Plumbing</option>
-                  <option>Cleaning</option>
+                  <option>Residential</option>
+                  <option>Commercial</option>
+                  <option>Specialty</option>
                   <option>Other</option>
                 </select>
               </div>

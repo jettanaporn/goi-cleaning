@@ -1,5 +1,5 @@
 import { format, parseISO, isToday, isSameDay } from 'date-fns';
-import type { JobStatus, EstimateStatus, InvoiceStatus, TechAvailability } from '../types';
+import type { JobStatus, InvoiceStatus, TechAvailability } from '../types';
 
 export function money(n: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
@@ -29,14 +29,6 @@ export const jobStatusLabel: Record<JobStatus, string> = {
   in_progress: 'In progress',
   done: 'Done',
   cancelled: 'Cancelled',
-};
-
-export const estimateStatusLabel: Record<EstimateStatus, string> = {
-  draft: 'Draft',
-  sent: 'Sent',
-  accepted: 'Accepted',
-  declined: 'Declined',
-  converted: 'Converted',
 };
 
 export const invoiceStatusLabel: Record<InvoiceStatus, string> = {

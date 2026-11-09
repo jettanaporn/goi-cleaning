@@ -2,7 +2,7 @@
   "name": "goi-cleaning",
   "private": true,
   "version": "0.0.0",
-  "description": "Goi Cleaning Project — field service management for home-service businesses",
+  "description": "Goi Cleaning Project — schedule, jobs, and invoices for cleaning businesses",
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -22,7 +22,7 @@ export function Login() {
           <BrandMark size="lg" />
           <div className="brand">Goi Cleaning</div>
         </div>
-        <p className="lede">Sign in to your field ops workspace. Demo accepts any email.</p>
+        <p className="lede">Sign in to your cleaning ops workspace. Demo accepts any email.</p>
         <div className="stack">
           <div className="field">
             <label htmlFor="email">Work email</label>

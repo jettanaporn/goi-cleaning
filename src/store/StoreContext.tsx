@@ -11,7 +11,6 @@ import { createSeedData } from '../data/seed';
 import type {
   AppData,
   Customer,
-  Estimate,
   Invoice,
   Job,
   JobStatus,
@@ -19,8 +18,8 @@ import type {
   Technician,
 } from '../types';
 
-/** Current persistence key. Legacy `cleanpro-app-v1` is read once and migrated. */
-const STORAGE_KEY = 'goi-cleaning-app-v1';
+/** Bumped so estimate-free / cleaning-only seed loads fresh. */
+const STORAGE_KEY = 'goi-cleaning-app-v3';
 const LEGACY_STORAGE_KEY = 'cleanpro-app-v1';
 
 type Store = {
@@ -30,8 +29,6 @@ type Store = {
   upsertJob: (j: Job) => void;
   assignJob: (jobId: string, technicianId: string | null) => void;
   setJobStatus: (jobId: string, status: JobStatus) => void;
-  upsertEstimate: (e: Estimate) => void;
-  convertEstimateToJob: (estimateId: string, scheduledStart: string, scheduledEnd: string) => Job | null;
   upsertInvoice: (i: Invoice) => void;
   markInvoicePaid: (invoiceId: string) => void;
   createInvoiceFromJob: (jobId: string) => Invoice | null;
@@ -47,12 +44,19 @@ function load(): AppData {
       localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as AppData;
-      if (parsed?.customers?.length) {
-        localStorage.setItem(STORAGE_KEY, raw);
+      if (parsed?.customers?.length && Array.isArray(parsed.jobs)) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...parsed, estimates: undefined }));
         if (localStorage.getItem(LEGACY_STORAGE_KEY)) {
           localStorage.removeItem(LEGACY_STORAGE_KEY);
         }
-        return parsed;
+        return {
+          customers: parsed.customers,
+          technicians: parsed.technicians ?? [],
+          services: parsed.services ?? [],
+          jobs: parsed.jobs,
+          invoices: parsed.invoices ?? [],
+          seededAt: parsed.seededAt ?? new Date().toISOString(),
+        };
       }
     }
   } catch {
@@ -128,54 +132,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return { ...d, jobs, technicians };
     });
   }, []);
-
-  const upsertEstimate = useCallback((e: Estimate) => {
-    setData((d) => {
-      const i = d.estimates.findIndex((x) => x.id === e.id);
-      const estimates = [...d.estimates];
-      if (i >= 0) estimates[i] = e;
-      else estimates.unshift(e);
-      return { ...d, estimates };
-    });
-  }, []);
-
-  const convertEstimateToJob = useCallback(
-    (estimateId: string, scheduledStart: string, scheduledEnd: string): Job | null => {
-      let created: Job | null = null;
-      setData((d) => {
-        const est = d.estimates.find((e) => e.id === estimateId);
-        if (!est) return d;
-        const maxNum = Math.max(
-          ...d.jobs.map((j) => parseInt(j.number.replace(/\D/g, ''), 10) || 0),
-          1000,
-        );
-        const job: Job = {
-          id: `job-${Math.random().toString(36).slice(2, 9)}`,
-          number: `JOB-${maxNum + 1}`,
-          customerId: est.customerId,
-          technicianId: null,
-          title: est.lineItems.map((l) => l.name).join(', ') || 'Converted estimate',
-          status: 'scheduled',
-          scheduledStart,
-          scheduledEnd,
-          lineItems: est.lineItems,
-          notes: est.notes,
-          estimateId: est.id,
-          createdAt: new Date().toISOString(),
-        };
-        created = job;
-        return {
-          ...d,
-          jobs: [job, ...d.jobs],
-          estimates: d.estimates.map((e) =>
-            e.id === estimateId ? { ...e, status: 'converted', jobId: job.id } : e,
-          ),
-        };
-      });
-      return created;
-    },
-    [],
-  );
 
   const upsertInvoice = useCallback((i: Invoice) => {
     setData((d) => {
@@ -256,8 +212,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       upsertJob,
       assignJob,
       setJobStatus,
-      upsertEstimate,
-      convertEstimateToJob,
       upsertInvoice,
       markInvoicePaid,
       createInvoiceFromJob,
@@ -271,8 +225,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       upsertJob,
       assignJob,
       setJobStatus,
-      upsertEstimate,
-      convertEstimateToJob,
       upsertInvoice,
       markInvoicePaid,
       createInvoiceFromJob,

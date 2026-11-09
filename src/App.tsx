@@ -7,7 +7,6 @@ import { Dashboard } from './pages/Dashboard';
 import { Schedule } from './pages/Schedule';
 import { Customers, CustomerDetail } from './pages/Customers';
 import { Jobs, JobDetail } from './pages/Jobs';
-import { Estimates } from './pages/Estimates';
 import { Invoices } from './pages/Invoices';
 import { PriceBook } from './pages/PriceBook';
 import { Team } from './pages/Team';
@@ -40,7 +39,6 @@ export default function App() {
           <Route path="customers/:id" element={<CustomerDetail />} />
           <Route path="jobs" element={<Jobs />} />
           <Route path="jobs/:id" element={<JobDetail />} />
-          <Route path="estimates" element={<Estimates />} />
           <Route path="invoices" element={<Invoices />} />
           <Route path="price-book" element={<PriceBook />} />
           <Route path="team" element={<Team />} />

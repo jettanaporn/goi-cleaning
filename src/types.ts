@@ -1,5 +1,4 @@
 export type JobStatus = 'scheduled' | 'en_route' | 'in_progress' | 'done' | 'cancelled';
-export type EstimateStatus = 'draft' | 'sent' | 'accepted' | 'declined' | 'converted';
 export type InvoiceStatus = 'draft' | 'sent' | 'paid' | 'overdue' | 'void';
 export type TechAvailability = 'available' | 'on_job' | 'off';
 
@@ -55,21 +54,8 @@ export interface Job {
   scheduledEnd: string;
   lineItems: LineItem[];
   notes: string;
-  estimateId?: string;
   invoiceId?: string;
   createdAt: string;
-}
-
-export interface Estimate {
-  id: string;
-  number: string;
-  customerId: string;
-  status: EstimateStatus;
-  lineItems: LineItem[];
-  notes: string;
-  validUntil: string;
-  createdAt: string;
-  jobId?: string;
 }
 
 export interface Invoice {
@@ -90,7 +76,6 @@ export interface AppData {
   technicians: Technician[];
   services: ServiceItem[];
   jobs: Job[];
-  estimates: Estimate[];
   invoices: Invoice[];
   seededAt: string;
 }
