@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { InvoiceDocument } from '../components/InvoiceDocument';
 import { Modal } from '../components/Modal';
 import { StatusBadge } from '../components/StatusBadge';
 import { money, when } from '../lib/format';
@@ -22,6 +23,17 @@ export function Invoices() {
     setPayOpen(false);
   }
 
+  function printInvoice() {
+    window.print();
+  }
+
+  const selectedCustomer = selected
+    ? data.customers.find((c) => c.id === selected.customerId)
+    : undefined;
+  const selectedJob = selected?.jobId
+    ? data.jobs.find((j) => j.id === selected.jobId)
+    : undefined;
+
   return (
     <div className="page-enter stack">
       <div className="topbar">
@@ -44,13 +56,14 @@ export function Invoices() {
         <tbody>
           {data.invoices.map((inv) => {
             const cust = data.customers.find((c) => c.id === inv.customerId);
+            const job = inv.jobId ? data.jobs.find((j) => j.id === inv.jobId) : undefined;
             return (
               <tr key={inv.id} onClick={() => setSelected(inv)}>
                 <td>
                   <strong>{inv.number}</strong>
-                  {inv.jobId && (
+                  {job && (
                     <div className="muted" style={{ fontSize: '0.8rem' }}>
-                      From job
+                      Job {job.number}
                     </div>
                   )}
                 </td>
@@ -67,48 +80,50 @@ export function Invoices() {
       </table>
 
       {selected && (
-        <Modal title={selected.number} onClose={() => setSelected(null)}>
-          <div className="stack">
-            <div className="row">
-              <StatusBadge kind="invoice" status={selected.status} />
-              <span className="muted">Due {when(selected.dueDate, 'MMM d, yyyy')}</span>
-            </div>
-            <div>{data.customers.find((c) => c.id === selected.customerId)?.name}</div>
-            <div className="line-items">
-              {selected.lineItems.map((li, i) => (
-                <div key={i} className="row" style={{ justifyContent: 'space-between' }}>
-                  <span>
-                    {li.name} × {li.quantity}
-                  </span>
-                  <span>{money(li.quantity * li.unitPrice)}</span>
-                </div>
-              ))}
-            </div>
-            <div className="total-row">
-              <span>Total</span>
-              <strong>{money(lineTotal(selected.lineItems))}</strong>
-            </div>
-            {selected.paidAt && (
-              <p className="muted">Paid {when(selected.paidAt, 'MMM d, h:mm a')}</p>
-            )}
-            <div className="modal-actions">
-              {selected.status === 'draft' && (
-                <button
-                  type="button"
-                  className="btn btn-outline"
-                  onClick={() => {
-                    upsertInvoice({ ...selected, status: 'sent' });
-                    setSelected({ ...selected, status: 'sent' });
-                  }}
-                >
-                  Send invoice
+        <Modal
+          title={`Invoice ${selected.number}`}
+          onClose={() => setSelected(null)}
+          wide
+          hideTitle
+        >
+          <div className="invoice-viewer">
+            <div className="invoice-toolbar no-print">
+              <div className="row" style={{ gap: '0.5rem', flexWrap: 'wrap' }}>
+                <StatusBadge kind="invoice" status={selected.status} />
+                <span className="muted" style={{ fontSize: '0.9rem' }}>
+                  {selected.number}
+                </span>
+              </div>
+              <div className="modal-actions" style={{ marginTop: 0 }}>
+                <button type="button" className="btn btn-outline" onClick={printInvoice}>
+                  Print / PDF
                 </button>
-              )}
-              {(selected.status === 'sent' || selected.status === 'overdue') && (
-                <button type="button" className="btn btn-solid" onClick={() => setPayOpen(true)}>
-                  Record payment
-                </button>
-              )}
+                {selected.status === 'draft' && (
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={() => {
+                      upsertInvoice({ ...selected, status: 'sent' });
+                      setSelected({ ...selected, status: 'sent' });
+                    }}
+                  >
+                    Send invoice
+                  </button>
+                )}
+                {(selected.status === 'sent' || selected.status === 'overdue') && (
+                  <button type="button" className="btn btn-solid" onClick={() => setPayOpen(true)}>
+                    Record payment
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="invoice-scroll" tabIndex={-1}>
+              <InvoiceDocument
+                invoice={selected}
+                customer={selectedCustomer}
+                job={selectedJob}
+              />
             </div>
           </div>
         </Modal>

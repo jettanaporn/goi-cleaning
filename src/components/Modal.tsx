@@ -5,11 +5,13 @@ export function Modal({
   children,
   onClose,
   wide,
+  hideTitle,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   wide?: boolean;
+  hideTitle?: boolean;
 }) {
   return (
     <div className="modal-backdrop" onClick={onClose} role="presentation">
@@ -20,7 +22,10 @@ export function Modal({
         aria-modal="true"
         aria-label={title}
       >
-        <h2>{title}</h2>
+        <button type="button" className="modal-close no-print" onClick={onClose} aria-label="Close">
+          ×
+        </button>
+        {!hideTitle && <h2>{title}</h2>}
         {children}
       </div>
     </div>
