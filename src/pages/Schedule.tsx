@@ -567,7 +567,7 @@ export function Schedule() {
   const [dayOffset, setDayOffset] = useState(0);
   const [focusedDay, setFocusedDay] = useState<Date | null>(() => startOfDay(new Date()));
 
-  const weekStart = startOfWeek(anchor, { weekStartsOn: 0 });
+  const weekStart = startOfWeek(anchor, { weekStartsOn: 1 });
   const dayDate = startOfDay(addDays(new Date(), dayOffset));
   const customerNames = Object.fromEntries(data.customers.map((c) => [c.id, c.name]));
   const activeJobs = data.jobs.filter((j) => j.status !== 'cancelled');
