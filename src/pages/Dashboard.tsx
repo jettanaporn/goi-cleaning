@@ -169,7 +169,7 @@ export function Dashboard() {
                   }}
                 >
                   <div>
-                    <Link to="/app/invoices">
+                    <Link to={`/app/invoices/${inv.id}`}>
                       <strong>{inv.number}</strong>
                     </Link>
                     <div className="muted" style={{ fontSize: '0.85rem' }}>

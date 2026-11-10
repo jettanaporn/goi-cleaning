@@ -1,38 +1,15 @@
 import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { InvoiceDocument } from '../components/InvoiceDocument';
 import { Modal } from '../components/Modal';
 import { StatusBadge } from '../components/StatusBadge';
 import { money, when } from '../lib/format';
 import { useStore } from '../store/StoreContext';
-import type { Invoice } from '../types';
 import { lineTotal } from '../types';
 
 export function Invoices() {
-  const { data, markInvoicePaid, upsertInvoice } = useStore();
-  const [selected, setSelected] = useState<Invoice | null>(null);
-  const [payOpen, setPayOpen] = useState(false);
-
-  function mockPay() {
-    if (!selected) return;
-    markInvoicePaid(selected.id);
-    setSelected({
-      ...selected,
-      status: 'paid',
-      paidAt: new Date().toISOString(),
-    });
-    setPayOpen(false);
-  }
-
-  function printInvoice() {
-    window.print();
-  }
-
-  const selectedCustomer = selected
-    ? data.customers.find((c) => c.id === selected.customerId)
-    : undefined;
-  const selectedJob = selected?.jobId
-    ? data.jobs.find((j) => j.id === selected.jobId)
-    : undefined;
+  const { data } = useStore();
+  const navigate = useNavigate();
 
   return (
     <div className="page-enter stack">
@@ -58,7 +35,7 @@ export function Invoices() {
             const cust = data.customers.find((c) => c.id === inv.customerId);
             const job = inv.jobId ? data.jobs.find((j) => j.id === inv.jobId) : undefined;
             return (
-              <tr key={inv.id} onClick={() => setSelected(inv)}>
+              <tr key={inv.id} onClick={() => navigate(`/app/invoices/${inv.id}`)}>
                 <td>
                   <strong>{inv.number}</strong>
                   {job && (
@@ -78,62 +55,84 @@ export function Invoices() {
           })}
         </tbody>
       </table>
+    </div>
+  );
+}
 
-      {selected && (
-        <Modal
-          title={`Invoice ${selected.number}`}
-          onClose={() => setSelected(null)}
-          wide
-          hideTitle
-        >
-          <div className="invoice-viewer">
-            <div className="invoice-toolbar no-print">
-              <div className="row" style={{ gap: '0.5rem', flexWrap: 'wrap' }}>
-                <StatusBadge kind="invoice" status={selected.status} />
-                <span className="muted" style={{ fontSize: '0.9rem' }}>
-                  {selected.number}
-                </span>
-              </div>
-              <div className="modal-actions" style={{ marginTop: 0 }}>
-                <button type="button" className="btn btn-outline" onClick={printInvoice}>
-                  Print / PDF
-                </button>
-                {selected.status === 'draft' && (
-                  <button
-                    type="button"
-                    className="btn btn-outline"
-                    onClick={() => {
-                      upsertInvoice({ ...selected, status: 'sent' });
-                      setSelected({ ...selected, status: 'sent' });
-                    }}
-                  >
-                    Send invoice
-                  </button>
-                )}
-                {(selected.status === 'sent' || selected.status === 'overdue') && (
-                  <button type="button" className="btn btn-solid" onClick={() => setPayOpen(true)}>
-                    Record payment
-                  </button>
-                )}
-              </div>
-            </div>
+export function InvoiceDetail() {
+  const { id } = useParams();
+  const { data, markInvoicePaid, upsertInvoice } = useStore();
+  const [payOpen, setPayOpen] = useState(false);
 
-            <div className="invoice-scroll" tabIndex={-1}>
-              <InvoiceDocument
-                invoice={selected}
-                customer={selectedCustomer}
-                job={selectedJob}
-              />
-            </div>
+  const invoice = data.invoices.find((i) => i.id === id);
+
+  if (!invoice) {
+    return (
+      <div className="page-enter">
+        <p className="empty">Invoice not found.</p>
+        <Link to="/app/invoices">← Invoices</Link>
+      </div>
+    );
+  }
+
+  const customer = data.customers.find((c) => c.id === invoice.customerId);
+  const job = invoice.jobId ? data.jobs.find((j) => j.id === invoice.jobId) : undefined;
+  const invoiceId = invoice.id;
+
+  function mockPay() {
+    markInvoicePaid(invoiceId);
+    setPayOpen(false);
+  }
+
+  function printInvoice() {
+    window.print();
+  }
+
+  return (
+    <div className="page-enter invoice-page">
+      <Link to="/app/invoices" className="muted no-print invoice-back">
+        ← Invoices
+      </Link>
+
+      <div className="invoice-viewer invoice-viewer-page">
+        <div className="invoice-toolbar no-print">
+          <div className="row" style={{ gap: '0.5rem', flexWrap: 'wrap' }}>
+            <StatusBadge kind="invoice" status={invoice.status} />
+            <span className="muted" style={{ fontSize: '0.9rem' }}>
+              {invoice.number}
+            </span>
           </div>
-        </Modal>
-      )}
+          <div className="modal-actions" style={{ marginTop: 0 }}>
+            <button type="button" className="btn btn-outline" onClick={printInvoice}>
+              Print / PDF
+            </button>
+            {invoice.status === 'draft' && (
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => upsertInvoice({ ...invoice, status: 'sent' })}
+              >
+                Send invoice
+              </button>
+            )}
+            {(invoice.status === 'sent' || invoice.status === 'overdue') && (
+              <button type="button" className="btn btn-solid" onClick={() => setPayOpen(true)}>
+                Record payment
+              </button>
+            )}
+          </div>
+        </div>
 
-      {payOpen && selected && (
+        <div className="invoice-scroll invoice-scroll-page" tabIndex={-1}>
+          <InvoiceDocument invoice={invoice} customer={customer} job={job} />
+        </div>
+      </div>
+
+      {payOpen && (
         <Modal title="Record payment" onClose={() => setPayOpen(false)}>
           <p className="muted" style={{ marginBottom: '1rem' }}>
             Simulated card payment — no real processor. Amount{' '}
-            <strong>{money(lineTotal(selected.lineItems))}</strong>.
+            <strong>{money(lineTotal(invoice.lineItems))}</strong>.
           </p>
           <div className="form-grid">
             <div className="field full">
@@ -154,7 +153,7 @@ export function Invoices() {
               Cancel
             </button>
             <button type="button" className="btn btn-solid" onClick={mockPay}>
-              Charge {money(lineTotal(selected.lineItems))}
+              Charge {money(lineTotal(invoice.lineItems))}
             </button>
           </div>
         </Modal>

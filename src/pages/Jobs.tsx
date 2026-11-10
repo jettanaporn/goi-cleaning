@@ -248,14 +248,14 @@ export function JobDetail() {
               className="btn btn-solid btn-sm"
               onClick={() => {
                 const inv = createInvoiceFromJob(job.id);
-                if (inv) navigate('/app/invoices');
+                if (inv) navigate(`/app/invoices/${inv.id}`);
               }}
             >
               Create invoice
             </button>
           )}
           {job.invoiceId && (
-            <Link to="/app/invoices" className="btn btn-outline btn-sm">
+            <Link to={`/app/invoices/${job.invoiceId}`} className="btn btn-outline btn-sm">
               View invoice
             </Link>
           )}

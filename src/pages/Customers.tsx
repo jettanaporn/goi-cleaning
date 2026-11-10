@@ -289,7 +289,7 @@ export function CustomerDetail() {
               }}
             >
               <div>
-                <Link to="/app/invoices">
+                <Link to={`/app/invoices/${i.id}`}>
                   <strong>{i.number}</strong>
                 </Link>
                 <div className="muted" style={{ fontSize: '0.85rem' }}>

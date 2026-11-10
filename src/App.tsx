@@ -7,7 +7,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Schedule } from './pages/Schedule';
 import { Customers, CustomerDetail } from './pages/Customers';
 import { Jobs, JobDetail } from './pages/Jobs';
-import { Invoices } from './pages/Invoices';
+import { InvoiceDetail, Invoices } from './pages/Invoices';
 import { PriceBook } from './pages/PriceBook';
 import { Team } from './pages/Team';
 
@@ -40,6 +40,7 @@ export default function App() {
           <Route path="jobs" element={<Jobs />} />
           <Route path="jobs/:id" element={<JobDetail />} />
           <Route path="invoices" element={<Invoices />} />
+          <Route path="invoices/:id" element={<InvoiceDetail />} />
           <Route path="price-book" element={<PriceBook />} />
           <Route path="team" element={<Team />} />
         </Route>
