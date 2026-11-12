@@ -5,10 +5,10 @@ Cleaning business ops web app for residential and commercial crews. Short brand 
 ## Stack
 
 - Vite + React + TypeScript
-- Client-side persistence via `localStorage` (seeded sample data on first load)
-- Storage key: `goi-cleaning-app-v3`
+- **Live workspace:** Postgres via `DATABASE_URL` (declared in `cursor-app.json` + `migrations/`) and Cursor sign-in on private/team publishes
+- **Fallback:** browser `localStorage` key `goi-cleaning-app-v3` with seeded sample data when the database or identity is unavailable
+- API: `GET` / `PUT` `/api/workspace` (identity required when the database is configured)
 - Schedule: Day board, Week time-grid, Month calendar, Year overview
-- Upgrade path to Postgres: see apps-database skill (`migrations/` + `DATABASE_URL`)
 
 ## Scripts
 
@@ -18,6 +18,9 @@ npm run dev
 npm run build
 ```
 
-## Demo
+## Workspace modes
 
-Open the app → **Open demo workspace** / sign in with any email → explore Dashboard, Schedule (Day / Week / Month / Year), Customers, Jobs, Invoices, Price book, and Team.
+1. **Live** — App published with Postgres; visibility **private** or **team** so Cursor sign-in reaches `/api/workspace`. Data is stored in the `workspaces` table (not demo seed).
+2. **Sample fallback** — Local dev, public apps without identity, or unset `DATABASE_URL`. Uses existing local sample data; does not delete it. Sidebar can reset sample data only in this mode.
+
+Open the app → **Open workspace** → Dashboard, Schedule, Customers, Jobs, Invoices, Price book, and Team.

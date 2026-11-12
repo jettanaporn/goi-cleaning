@@ -9,7 +9,7 @@ export function Landing() {
           <BrandMark size="sm" />
           <div className="brand">Goi Cleaning</div>
         </div>
-        <Link to="/login" className="btn btn-ghost btn-sm">
+        <Link to="/app" className="btn btn-ghost btn-sm">
           Sign in
         </Link>
       </nav>
@@ -23,8 +23,8 @@ export function Landing() {
           crew and the office.
         </p>
         <div className="cta-row">
-          <Link to="/login" className="btn btn-primary">
-            Open demo workspace
+          <Link to="/app" className="btn btn-primary">
+            Open workspace
           </Link>
           <a href="#features" className="btn btn-ghost" onClick={(e) => e.preventDefault()}>
             See how it works

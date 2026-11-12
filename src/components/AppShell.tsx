@@ -15,7 +15,7 @@ const links = [
 
 export function AppShell() {
   const [open, setOpen] = useState(false);
-  const { resetDemo } = useStore();
+  const { mode, resetSampleData } = useStore();
   const navigate = useNavigate();
 
   return (
@@ -41,25 +41,29 @@ export function AppShell() {
           </NavLink>
         ))}
         <div className="nav-footer">
-          <div style={{ marginBottom: '0.5rem' }}>Sample data demo</div>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            style={{ width: '100%' }}
-            onClick={() => {
-              resetDemo();
-              setOpen(false);
-            }}
-          >
-            Reset demo data
-          </button>
+          <div style={{ marginBottom: '0.5rem' }}>
+            {mode === 'live' ? 'Live workspace' : 'Sample data (local)'}
+          </div>
+          {mode === 'sample' ? (
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              style={{ width: '100%' }}
+              onClick={() => {
+                resetSampleData();
+                setOpen(false);
+              }}
+            >
+              Reset sample data
+            </button>
+          ) : null}
           <button
             type="button"
             className="btn btn-ghost btn-sm"
             style={{ width: '100%', marginTop: '0.4rem' }}
             onClick={() => navigate('/')}
           >
-            Sign out
+            Back to home
           </button>
         </div>
       </aside>

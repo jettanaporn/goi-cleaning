@@ -6,7 +6,7 @@ import { lineTotal } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
 
 export function Dashboard() {
-  const { data } = useStore();
+  const { data, mode } = useStore();
   const todayJobs = data.jobs
     .filter((j) => isToday(parseISO(j.scheduledStart)) && j.status !== 'cancelled')
     .sort((a, b) => a.scheduledStart.localeCompare(b.scheduledStart));
@@ -30,7 +30,10 @@ export function Dashboard() {
       <div className="topbar">
         <div>
           <h1>Dashboard</h1>
-          <div className="sub">Today’s cleaning picture · sample data</div>
+          <div className="sub">
+            Today’s cleaning picture
+            {mode === 'sample' ? ' · sample data (local fallback)' : ' · live workspace'}
+          </div>
         </div>
         <div className="row">
           <Link to="/app/jobs" className="btn btn-solid btn-sm">

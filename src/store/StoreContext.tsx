@@ -4,10 +4,12 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
 import { createSeedData } from '../data/seed';
+import { fetchWorkspace, saveWorkspace, type WorkspaceMode } from '../lib/workspaceClient';
 import type {
   AppData,
   Customer,
@@ -18,12 +20,18 @@ import type {
   Technician,
 } from '../types';
 
-/** Bumped so estimate-free / cleaning-only seed loads fresh. */
+/** Browser fallback when Postgres / auth is unavailable. Demo seed key preserved. */
 const STORAGE_KEY = 'goi-cleaning-app-v3';
 const LEGACY_STORAGE_KEY = 'cleanpro-app-v1';
+const AUTH_KEY = 'goi-cleaning-authed';
+const LEGACY_AUTH_KEY = 'cleanpro-authed';
 
 type Store = {
   data: AppData;
+  mode: WorkspaceMode;
+  ready: boolean;
+  resetSampleData: () => void;
+  /** @deprecated use resetSampleData */
   resetDemo: () => void;
   upsertCustomer: (c: Customer) => void;
   upsertJob: (j: Job) => void;
@@ -38,7 +46,7 @@ type Store = {
 
 const StoreContext = createContext<Store | null>(null);
 
-function load(): AppData {
+function loadSample(): AppData {
   try {
     const raw =
       localStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(LEGACY_STORAGE_KEY);
@@ -67,20 +75,71 @@ function load(): AppData {
   return seed;
 }
 
+function clearDemoAuthFlags() {
+  try {
+    sessionStorage.removeItem(AUTH_KEY);
+    sessionStorage.removeItem(LEGACY_AUTH_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AppData>(() => load());
+  const [data, setData] = useState<AppData | null>(null);
+  const [mode, setMode] = useState<WorkspaceMode>('sample');
+  const [ready, setReady] = useState(false);
+  const skipNextPersist = useRef(false);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  }, [data]);
+    clearDemoAuthFlags();
+    let cancelled = false;
 
-  const resetDemo = useCallback(() => {
+    (async () => {
+      const remote = await fetchWorkspace();
+      if (cancelled) return;
+
+      if (remote?.available && remote.mode === 'live') {
+        skipNextPersist.current = true;
+        setMode('live');
+        setData(remote.data);
+        setReady(true);
+        return;
+      }
+
+      // No Postgres, no signed-in identity, or API unavailable → sample fallback.
+      // Existing localStorage sample/demo data is kept (not deleted).
+      setMode('sample');
+      setData(loadSample());
+      setReady(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!ready || !data) return;
+    if (skipNextPersist.current) {
+      skipNextPersist.current = false;
+      return;
+    }
+    if (mode === 'live') {
+      void saveWorkspace(data);
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }, [data, mode, ready]);
+
+  const resetSampleData = useCallback(() => {
+    if (mode !== 'sample') return;
     const seed = createSeedData();
     setData(seed);
-  }, []);
+  }, [mode]);
 
   const upsertCustomer = useCallback((c: Customer) => {
     setData((d) => {
+      if (!d) return d;
       const i = d.customers.findIndex((x) => x.id === c.id);
       const customers = [...d.customers];
       if (i >= 0) customers[i] = c;
@@ -91,6 +150,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const upsertJob = useCallback((j: Job) => {
     setData((d) => {
+      if (!d) return d;
       const i = d.jobs.findIndex((x) => x.id === j.id);
       const jobs = [...d.jobs];
       if (i >= 0) jobs[i] = j;
@@ -106,14 +166,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const assignJob = useCallback((jobId: string, technicianId: string | null) => {
-    setData((d) => ({
-      ...d,
-      jobs: d.jobs.map((j) => (j.id === jobId ? { ...j, technicianId } : j)),
-    }));
+    setData((d) =>
+      d
+        ? {
+            ...d,
+            jobs: d.jobs.map((j) => (j.id === jobId ? { ...j, technicianId } : j)),
+          }
+        : d,
+    );
   }, []);
 
   const setJobStatus = useCallback((jobId: string, status: JobStatus) => {
     setData((d) => {
+      if (!d) return d;
       const jobs = d.jobs.map((j) => (j.id === jobId ? { ...j, status } : j));
       const job = jobs.find((j) => j.id === jobId);
       let technicians = d.technicians;
@@ -135,6 +200,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const upsertInvoice = useCallback((i: Invoice) => {
     setData((d) => {
+      if (!d) return d;
       const idx = d.invoices.findIndex((x) => x.id === i.id);
       const invoices = [...d.invoices];
       if (idx >= 0) invoices[idx] = i;
@@ -144,19 +210,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const markInvoicePaid = useCallback((invoiceId: string) => {
-    setData((d) => ({
-      ...d,
-      invoices: d.invoices.map((i) =>
-        i.id === invoiceId
-          ? { ...i, status: 'paid', paidAt: new Date().toISOString() }
-          : i,
-      ),
-    }));
+    setData((d) =>
+      d
+        ? {
+            ...d,
+            invoices: d.invoices.map((i) =>
+              i.id === invoiceId
+                ? { ...i, status: 'paid', paidAt: new Date().toISOString() }
+                : i,
+            ),
+          }
+        : d,
+    );
   }, []);
 
   const createInvoiceFromJob = useCallback((jobId: string): Invoice | null => {
     let created: Invoice | null = null;
     setData((d) => {
+      if (!d) return d;
       const job = d.jobs.find((j) => j.id === jobId);
       if (!job) return d;
       const maxNum = Math.max(
@@ -186,6 +257,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const upsertService = useCallback((s: ServiceItem) => {
     setData((d) => {
+      if (!d) return d;
       const i = d.services.findIndex((x) => x.id === s.id);
       const services = [...d.services];
       if (i >= 0) services[i] = s;
@@ -196,6 +268,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const upsertTechnician = useCallback((t: Technician) => {
     setData((d) => {
+      if (!d) return d;
       const i = d.technicians.findIndex((x) => x.id === t.id);
       const technicians = [...d.technicians];
       if (i >= 0) technicians[i] = t;
@@ -206,8 +279,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
-      data,
-      resetDemo,
+      data: data ?? createSeedData(),
+      mode,
+      ready,
+      resetSampleData,
+      resetDemo: resetSampleData,
       upsertCustomer,
       upsertJob,
       assignJob,
@@ -220,7 +296,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }),
     [
       data,
-      resetDemo,
+      mode,
+      ready,
+      resetSampleData,
       upsertCustomer,
       upsertJob,
       assignJob,
@@ -232,6 +310,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       upsertTechnician,
     ],
   );
+
+  if (!ready || !data) {
+    return (
+      <div className="login-wrap">
+        <div className="login-card" style={{ textAlign: 'center' }}>
+          <div className="brand">Goi Cleaning</div>
+          <p className="lede" style={{ marginTop: '0.75rem' }}>
+            Loading workspace…
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

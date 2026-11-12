@@ -11,28 +11,13 @@ import { InvoiceDetail, Invoices } from './pages/Invoices';
 import { PriceBook } from './pages/PriceBook';
 import { Team } from './pages/Team';
 
-function RequireDemoAuth({ children }: { children: React.ReactNode }) {
-  const ok =
-    sessionStorage.getItem('goi-cleaning-authed') === '1' ||
-    sessionStorage.getItem('cleanpro-authed') === '1';
-  if (!ok) return <Navigate to="/login" replace />;
-  return children;
-}
-
 export default function App() {
   return (
     <StoreProvider>
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
-        <Route
-          path="/app"
-          element={
-            <RequireDemoAuth>
-              <AppShell />
-            </RequireDemoAuth>
-          }
-        >
+        <Route path="/app" element={<AppShell />}>
           <Route index element={<Dashboard />} />
           <Route path="schedule" element={<Schedule />} />
           <Route path="customers" element={<Customers />} />
