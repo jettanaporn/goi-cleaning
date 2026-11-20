@@ -16,7 +16,6 @@ import type {
   Invoice,
   Job,
   JobStatus,
-  ServiceItem,
   Technician,
 } from '../types';
 
@@ -40,7 +39,6 @@ type Store = {
   upsertInvoice: (i: Invoice) => void;
   markInvoicePaid: (invoiceId: string) => void;
   createInvoiceFromJob: (jobId: string) => Invoice | null;
-  upsertService: (s: ServiceItem) => void;
   upsertTechnician: (t: Technician) => void;
 };
 
@@ -60,7 +58,6 @@ function loadSample(): AppData {
         return {
           customers: parsed.customers,
           technicians: parsed.technicians ?? [],
-          services: parsed.services ?? [],
           jobs: parsed.jobs,
           invoices: parsed.invoices ?? [],
           seededAt: parsed.seededAt ?? new Date().toISOString(),
@@ -101,7 +98,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (remote?.available && remote.mode === 'live') {
         skipNextPersist.current = true;
         setMode('live');
-        setData(remote.data);
+        const remoteData = remote.data;
+        setData({
+          customers: remoteData.customers,
+          technicians: remoteData.technicians ?? [],
+          jobs: remoteData.jobs,
+          invoices: remoteData.invoices ?? [],
+          seededAt: remoteData.seededAt ?? new Date().toISOString(),
+        });
         setReady(true);
         return;
       }
@@ -255,17 +259,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return created;
   }, []);
 
-  const upsertService = useCallback((s: ServiceItem) => {
-    setData((d) => {
-      if (!d) return d;
-      const i = d.services.findIndex((x) => x.id === s.id);
-      const services = [...d.services];
-      if (i >= 0) services[i] = s;
-      else services.push(s);
-      return { ...d, services };
-    });
-  }, []);
-
   const upsertTechnician = useCallback((t: Technician) => {
     setData((d) => {
       if (!d) return d;
@@ -291,7 +284,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       upsertInvoice,
       markInvoicePaid,
       createInvoiceFromJob,
-      upsertService,
       upsertTechnician,
     }),
     [
@@ -306,7 +298,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       upsertInvoice,
       markInvoicePaid,
       createInvoiceFromJob,
-      upsertService,
       upsertTechnician,
     ],
   );

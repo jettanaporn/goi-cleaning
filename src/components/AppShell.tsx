@@ -9,7 +9,6 @@ const links = [
   { to: '/app/customers', label: 'Customers' },
   { to: '/app/jobs', label: 'Jobs' },
   { to: '/app/invoices', label: 'Invoices' },
-  { to: '/app/price-book', label: 'Price book' },
   { to: '/app/team', label: 'Team' },
 ];
 

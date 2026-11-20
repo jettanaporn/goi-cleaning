@@ -27,16 +27,8 @@ export interface Technician {
   skills: string[];
 }
 
-export interface ServiceItem {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  price: number;
-  durationMinutes: number;
-}
-
 export interface LineItem {
+  /** Opaque id kept for display keys; not linked to a catalog. */
   serviceId: string;
   name: string;
   quantity: number;
@@ -74,7 +66,6 @@ export interface Invoice {
 export interface AppData {
   customers: Customer[];
   technicians: Technician[];
-  services: ServiceItem[];
   jobs: Job[];
   invoices: Invoice[];
   seededAt: string;

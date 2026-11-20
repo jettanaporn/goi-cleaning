@@ -23,4 +23,4 @@ npm run build
 1. **Live** — App published with Postgres; visibility **private** or **team** so Cursor sign-in reaches `/api/workspace`. Data is stored in the `workspaces` table (not demo seed).
 2. **Sample fallback** — Local dev, public apps without identity, or unset `DATABASE_URL`. Uses existing local sample data; does not delete it. Sidebar can reset sample data only in this mode.
 
-Open the app → **Open workspace** → Dashboard, Schedule, Customers, Jobs, Invoices, Price book, and Team.
+Open the app → **Open workspace** → Dashboard, Schedule, Customers, Jobs, Invoices, and Team.

@@ -19,7 +19,8 @@ export function Jobs() {
     title: '',
     scheduledStart: formatISO(addHours(new Date(), 2)).slice(0, 16),
     durationHours: '2',
-    serviceId: data.services[0]?.id ?? '',
+    serviceName: '',
+    servicePrice: '',
     notes: '',
   });
 
@@ -32,9 +33,10 @@ export function Jobs() {
     e.preventDefault();
     const start = new Date(form.scheduledStart);
     const end = addHours(start, Number(form.durationHours) || 2);
-    const svc = data.services.find((s) => s.id === form.serviceId);
-    const lineItems: LineItem[] = svc
-      ? [{ serviceId: svc.id, name: svc.name, quantity: 1, unitPrice: svc.price }]
+    const serviceName = form.serviceName.trim();
+    const unitPrice = Number(form.servicePrice) || 0;
+    const lineItems: LineItem[] = serviceName
+      ? [{ serviceId: uid('li'), name: serviceName, quantity: 1, unitPrice }]
       : [];
     const job: Job = {
       id: uid('job'),
@@ -44,7 +46,7 @@ export function Jobs() {
       ),
       customerId: form.customerId,
       technicianId: form.technicianId || null,
-      title: form.title || svc?.name || 'Service job',
+      title: form.title.trim() || serviceName || 'Service job',
       status: 'scheduled',
       scheduledStart: formatISO(start),
       scheduledEnd: formatISO(end),
@@ -137,17 +139,23 @@ export function Jobs() {
                 </select>
               </div>
               <div className="field">
-                <label>Service</label>
-                <select
-                  value={form.serviceId}
-                  onChange={(e) => setForm({ ...form, serviceId: e.target.value })}
-                >
-                  {data.services.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} · {money(s.price)}
-                    </option>
-                  ))}
-                </select>
+                <label>Service name</label>
+                <input
+                  value={form.serviceName}
+                  placeholder="Optional — leave blank for no line items"
+                  onChange={(e) => setForm({ ...form, serviceName: e.target.value })}
+                />
+              </div>
+              <div className="field">
+                <label>Price</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={form.servicePrice}
+                  placeholder="0"
+                  onChange={(e) => setForm({ ...form, servicePrice: e.target.value })}
+                />
               </div>
               <div className="field">
                 <label>Start</label>

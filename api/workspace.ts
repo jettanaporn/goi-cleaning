@@ -38,7 +38,6 @@ function withinLimits(data: AppData): boolean {
   return (
     data.customers.length <= MAX_COLLECTION &&
     data.technicians.length <= MAX_COLLECTION &&
-    data.services.length <= MAX_COLLECTION &&
     data.jobs.length <= MAX_COLLECTION &&
     data.invoices.length <= MAX_COLLECTION
   );
@@ -111,7 +110,6 @@ export async function PUT(request: Request): Promise<Response> {
   const payload = JSON.stringify({
     customers: data.customers,
     technicians: data.technicians,
-    services: data.services,
     jobs: data.jobs,
     invoices: data.invoices,
     seededAt: data.seededAt ?? new Date().toISOString(),
