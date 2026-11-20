@@ -115,6 +115,7 @@ export async function PUT(request: Request): Promise<Response> {
     jobs: data.jobs,
     invoices: data.invoices,
     seededAt: data.seededAt ?? new Date().toISOString(),
+    dataVersion: data.dataVersion ?? 0,
   });
   if (payload.length > MAX_PAYLOAD_BYTES) {
     return Response.json({ error: 'payload_too_large' }, { status: 413, headers: noStore });

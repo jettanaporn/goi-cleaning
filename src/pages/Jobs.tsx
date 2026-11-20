@@ -5,6 +5,7 @@ import { Modal } from '../components/Modal';
 import { StatusBadge } from '../components/StatusBadge';
 import { money, timeRange, when } from '../lib/format';
 import { nextNumber, uid } from '../lib/ids';
+import { techLabel } from '../lib/techLabel';
 import { useStore } from '../store/StoreContext';
 import type { Job, JobStatus, LineItem } from '../types';
 import { lineTotal } from '../types';
@@ -99,7 +100,7 @@ export function Jobs() {
                     {timeRange(j.scheduledStart, j.scheduledEnd)}
                   </div>
                 </td>
-                <td>{tech?.name ?? <span className="muted">Unassigned</span>}</td>
+                <td>{tech ? techLabel(tech) : <span className="muted">Unassigned</span>}</td>
                 <td>
                   <StatusBadge kind="job" status={j.status} />
                 </td>
@@ -177,7 +178,7 @@ export function Jobs() {
                   <option value="">Unassigned</option>
                   {data.technicians.map((t) => (
                     <option key={t.id} value={t.id}>
-                      {t.name}
+                      {techLabel(t)}
                     </option>
                   ))}
                 </select>
@@ -283,7 +284,7 @@ export function JobDetail() {
             )}
             <p style={{ marginTop: '0.75rem' }}>
               <strong>Technician · </strong>
-              {tech?.name ?? 'Unassigned'}
+              {tech ? techLabel(tech) : 'Unassigned'}
             </p>
             <div className="field" style={{ marginTop: '0.75rem', maxWidth: 240 }}>
               <label>Assign tech</label>
@@ -296,7 +297,7 @@ export function JobDetail() {
                 <option value="">Unassigned</option>
                 {data.technicians.map((t) => (
                   <option key={t.id} value={t.id}>
-                    {t.name}
+                    {techLabel(t)}
                   </option>
                 ))}
               </select>

@@ -5,13 +5,14 @@ import {
   startOfDay,
   formatISO,
 } from 'date-fns';
-import type {
-  AppData,
-  Customer,
-  Invoice,
-  Job,
-  ServiceItem,
-  Technician,
+import {
+  APP_DATA_VERSION,
+  type AppData,
+  type Customer,
+  type Invoice,
+  type Job,
+  type ServiceItem,
+  type Technician,
 } from '../types';
 
 function at(dayOffset: number, hour: number, minute = 0): string {
@@ -115,10 +116,11 @@ const customers: Customer[] = [
   },
 ];
 
+/** Seed technicians keep ids/roles/contact; display names intentionally blank. */
 const technicians: Technician[] = [
   {
     id: 'tech-1',
-    name: 'Alex Rivera',
+    name: '',
     email: 'alex@goi.local',
     phone: '(512) 555-1001',
     role: 'Lead Cleaner',
@@ -128,7 +130,7 @@ const technicians: Technician[] = [
   },
   {
     id: 'tech-2',
-    name: 'Jordan Blake',
+    name: '',
     email: 'jordan@goi.local',
     phone: '(512) 555-1002',
     role: 'Residential Specialist',
@@ -138,7 +140,7 @@ const technicians: Technician[] = [
   },
   {
     id: 'tech-3',
-    name: 'Sam Ortiz',
+    name: '',
     email: 'sam@goi.local',
     phone: '(512) 555-1003',
     role: 'Cleaning Lead',
@@ -148,7 +150,7 @@ const technicians: Technician[] = [
   },
   {
     id: 'tech-4',
-    name: 'Casey Morgan',
+    name: '',
     email: 'casey@goi.local',
     phone: '(512) 555-1004',
     role: 'Commercial Cleaner',
@@ -158,7 +160,7 @@ const technicians: Technician[] = [
   },
   {
     id: 'tech-5',
-    name: 'Riley Park',
+    name: '',
     email: 'riley@goi.local',
     phone: '(512) 555-1005',
     role: 'Apprentice',
@@ -524,5 +526,6 @@ export function createSeedData(): AppData {
     jobs,
     invoices,
     seededAt: new Date().toISOString(),
+    dataVersion: APP_DATA_VERSION,
   };
 }
