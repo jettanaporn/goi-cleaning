@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { isToday, parseISO } from 'date-fns';
 import { money, timeRange, when } from '../lib/format';
+import { techInitials, techLabel } from '../lib/techLabel';
 import { useStore } from '../store/StoreContext';
 import { lineTotal } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
@@ -103,7 +104,7 @@ export function Dashboard() {
                           </div>
                         </Link>
                       </td>
-                      <td>{tech?.name ?? <span className="muted">Unassigned</span>}</td>
+                      <td>{tech ? techLabel(tech) : <span className="muted">Unassigned</span>}</td>
                       <td>
                         <StatusBadge kind="job" status={j.status} />
                       </td>
@@ -133,13 +134,10 @@ export function Dashboard() {
                   return (
                     <div key={t.id} className="row" style={{ gap: '0.75rem' }}>
                       <div className="tech-avatar" style={{ background: t.color }}>
-                        {t.name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')}
+                        {techInitials(t.name)}
                       </div>
                       <div>
-                        <strong>{t.name}</strong>
+                        <strong>{t.name || techLabel(t)}</strong>
                         <div className="muted" style={{ fontSize: '0.85rem' }}>
                           {job?.title ?? 'On assignment'}
                         </div>

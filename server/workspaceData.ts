@@ -1,4 +1,4 @@
-import type { AppData } from '../src/types.ts';
+import { APP_DATA_VERSION, type AppData } from '../src/types.ts';
 
 export function createEmptyWorkspace(): AppData {
   return {
@@ -8,6 +8,7 @@ export function createEmptyWorkspace(): AppData {
     jobs: [],
     invoices: [],
     seededAt: new Date().toISOString(),
+    dataVersion: APP_DATA_VERSION,
   };
 }
 

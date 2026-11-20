@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { createSeedData } from '../data/seed';
+import { migrateAppData } from '../lib/migrateAppData';
 import { fetchWorkspace, saveWorkspace, type WorkspaceMode } from '../lib/workspaceClient';
 import type {
   AppData,
@@ -53,18 +54,20 @@ function loadSample(): AppData {
     if (raw) {
       const parsed = JSON.parse(raw) as AppData;
       if (parsed?.customers?.length && Array.isArray(parsed.jobs)) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...parsed, estimates: undefined }));
-        if (localStorage.getItem(LEGACY_STORAGE_KEY)) {
-          localStorage.removeItem(LEGACY_STORAGE_KEY);
-        }
-        return {
+        const { data: migrated } = migrateAppData({
           customers: parsed.customers,
           technicians: parsed.technicians ?? [],
           services: parsed.services ?? [],
           jobs: parsed.jobs,
           invoices: parsed.invoices ?? [],
           seededAt: parsed.seededAt ?? new Date().toISOString(),
-        };
+          dataVersion: parsed.dataVersion,
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...migrated, estimates: undefined }));
+        if (localStorage.getItem(LEGACY_STORAGE_KEY)) {
+          localStorage.removeItem(LEGACY_STORAGE_KEY);
+        }
+        return migrated;
       }
     }
   } catch {
@@ -99,9 +102,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (cancelled) return;
 
       if (remote?.available && remote.mode === 'live') {
-        skipNextPersist.current = true;
+        const { data: migrated, changed } = migrateAppData(remote.data);
+        // Persist cleared names when migration ran; otherwise skip echoing remote load.
+        skipNextPersist.current = !changed;
         setMode('live');
-        setData(remote.data);
+        setData(migrated);
         setReady(true);
         return;
       }

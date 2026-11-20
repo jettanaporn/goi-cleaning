@@ -71,6 +71,9 @@ export interface Invoice {
   createdAt: string;
 }
 
+/** Current AppData one-time migration watermark (see migrateAppData). */
+export const APP_DATA_VERSION = 1;
+
 export interface AppData {
   customers: Customer[];
   technicians: Technician[];
@@ -78,6 +81,8 @@ export interface AppData {
   jobs: Job[];
   invoices: Invoice[];
   seededAt: string;
+  /** One-time migration watermark; omit/0 = pre-clear-team-names. */
+  dataVersion?: number;
 }
 
 export function lineTotal(items: LineItem[]): number {

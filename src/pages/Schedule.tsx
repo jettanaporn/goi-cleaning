@@ -33,6 +33,7 @@ import {
 import { Link } from 'react-router-dom';
 import { StatusBadge } from '../components/StatusBadge';
 import { sameDay, timeRange } from '../lib/format';
+import { techInitials, techLabel } from '../lib/techLabel';
 import { useStore } from '../store/StoreContext';
 import type { Job, JobStatus, Technician } from '../types';
 
@@ -209,11 +210,7 @@ function WeekView({
                       <strong>{cust}</strong>
                       {tech && (
                         <span className="cal-block-avatar" style={{ background: color }}>
-                          {tech.name
-                            .split(' ')
-                            .map((p) => p[0])
-                            .join('')
-                            .slice(0, 2)}
+                          {techInitials(tech.name)}
                         </span>
                       )}
                     </div>
@@ -323,7 +320,7 @@ function MonthView({
                       <div className="muted">
                         {timeRange(j.scheduledStart, j.scheduledEnd)} ·{' '}
                         {customers[j.customerId] ?? '—'}
-                        {tech ? ` · ${tech.name}` : ' · Unassigned'}
+                        {tech ? ` · ${techLabel(tech)}` : ' · Unassigned'}
                       </div>
                     </div>
                     <StatusBadge kind="job" status={j.status} />
@@ -475,7 +472,7 @@ function DayView({
               <TechColumn
                 key={t.id}
                 id={t.id}
-                title={t.name}
+                title={techLabel(t)}
                 color={t.color}
                 jobs={dayJobs.filter((j) => j.technicianId === t.id)}
                 customers={customerNames}
@@ -516,7 +513,7 @@ function DayView({
                       {timeRange(j.scheduledStart, j.scheduledEnd)}
                     </div>
                   </td>
-                  <td>{tech?.name ?? '—'}</td>
+                  <td>{tech ? techLabel(tech) : '—'}</td>
                   <td>
                     <div className="row">
                       <StatusBadge kind="job" status={j.status} />
@@ -543,7 +540,7 @@ function DayView({
                           .filter((t) => t.availability !== 'off')
                           .map((t) => (
                             <option key={t.id} value={t.id}>
-                              {t.name}
+                              {techLabel(t)}
                             </option>
                           ))}
                       </select>

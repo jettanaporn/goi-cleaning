@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Modal } from '../components/Modal';
 import { StatusBadge } from '../components/StatusBadge';
 import { uid } from '../lib/ids';
+import { techInitials, techLabel } from '../lib/techLabel';
 import { useStore } from '../store/StoreContext';
 import type { TechAvailability, Technician } from '../types';
 
@@ -68,13 +69,10 @@ export function Team() {
           >
             <div className="row" style={{ alignItems: 'flex-start' }}>
               <div className="tech-avatar" style={{ background: t.color, width: 44, height: 44 }}>
-                {t.name
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')}
+                {techInitials(t.name)}
               </div>
               <div>
-                <strong style={{ fontSize: '1.05rem' }}>{t.name}</strong>
+                <strong style={{ fontSize: '1.05rem' }}>{t.name || '\u00A0'}</strong>
                 <div className="muted">{t.role}</div>
                 <div className="muted" style={{ fontSize: '0.85rem', marginTop: '0.2rem' }}>
                   {t.phone} · {t.email}
@@ -89,7 +87,7 @@ export function Team() {
               <select
                 value={t.availability}
                 onChange={(e) => setAvailability(t, e.target.value as TechAvailability)}
-                aria-label={`Availability for ${t.name}`}
+                aria-label={`Availability for ${techLabel(t)}`}
               >
                 <option value="available">Available</option>
                 <option value="on_job">On a job</option>
